@@ -1,5 +1,5 @@
 # Base image for this custom docker image 
-FROM node:26-alpine
+FROM node:26-alpine3.22
 
 # copy repo into the docker image 
 COPY . .
