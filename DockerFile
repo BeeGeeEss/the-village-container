@@ -2,7 +2,7 @@
 FROM node:26-alpine
 
 # copy repo into the docker image 
-# COPY . .
+COPY . .
 
 # copy specific items into the docker image
 # and setup the app from specific files 
