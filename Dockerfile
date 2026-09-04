@@ -1,27 +1,27 @@
-# Base image for this custom docker image 
+# Base image
 FROM node:26-alpine
 
-# copy repo into the docker image 
-COPY . .
-
-# copy specific items into the docker image
-# and setup the app from specific files 
-
-# Put our project-specific files into single directory
+# Put the application in /app
 WORKDIR /app
 
-# Copy relevant project contents into /app
+# Copy package files first for better Docker layer caching
 COPY package*.json ./
-COPY src ./src
 
-# Install the production dependencies to run the app!
+# Install production dependencies
 RUN npm ci --omit=dev
 
+# Copy application source
+COPY src ./src
+
+# Configure application port
 ARG PORT=3000
 ENV PORT=${PORT}
 
+# Document the port
 EXPOSE ${PORT}
 
+# Run as non-root user
 USER node
 
-CMD ["npm","start"]
+# Start the application
+CMD ["npm", "start"]
