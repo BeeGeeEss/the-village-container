@@ -8,7 +8,9 @@
 
 - [Overview of Project](#overview-of-project)
 - [The Village Wellness App](#the-village-wellness-app)
-- [Overview of Backend Application](#overview-of-backend-application)
+- [Application Architecture](#application-architecture)
+- [Containerised Architecture](#containerised-architecture)
+- [CI/CD Architecture](#cicd-architecture)
 - [Project Features](#project-features)
 - [Tech Stack](#tech-stack)
 - [Packages](#packages)
@@ -23,6 +25,10 @@
 - [Installation](#installation)
 - [Environment Variables](#environment-variables)
 - [Running the Server](#running-the-server)
+- [Docker Containerisation](#docker-containerisation)
+- [Docker Image Tags](#docker-image-tags)
+- [CI/CD](#cicd)
+- [Container Registry](#container-registry)
 - [Scripts](#scripts)
 - [Testing](#testing)
 - [Deployment](#deployment)
@@ -48,7 +54,71 @@ The application also allows users to add event markers to their timeline, such a
 
 ## Application Architecture
 
-Placeholder
+The following diagram represents the existing architecture of The Village Wellness App backend before containerisation.
+
+```mermaid
+flowchart LR
+
+    %% CLIENTS
+    F["React Frontend<br/>(Separate Project)"]
+    I["Insomnia<br/>/ API Client"]
+
+    %% EXPRESS API
+    subgraph API["Express / Node.js REST API"]
+
+        S["Security Middleware<br/><br/>
+        • Helmet<br/>
+        • CORS<br/>
+        • JWT Authentication<br/>
+        • Authorisation"]
+
+        R["Routes & Controllers<br/><br/>
+        • Users<br/>
+        • Moods<br/>
+        • Pains<br/>
+        • Events"]
+
+        V["Validation &<br/>Error Handling"]
+
+        S --> R
+        R --> V
+    end
+
+    %% DATABASE
+    subgraph DB["MongoDB Atlas"]
+
+        D["Application Data<br/><br/>
+        • Users<br/>
+        • Moods<br/>
+        • Pains<br/>
+        • Events<br/>
+        • Hashed Passwords"]
+
+    end
+
+    %% DEVELOPMENT & TESTING
+    T["Development & Testing<br/><br/>
+    Jest + Supertest"]
+
+    %% ENVIRONMENT CONFIGURATION
+    E["Environment Configuration<br/><br/>
+    DATABASE_URL<br/>
+    JWT_SECRET_KEY<br/>
+    PORT<br/>
+    NODE_ENV"]
+
+    %% CONNECTIONS
+    F -->|"HTTP / JSON"| S
+    I -->|"HTTP / JSON"| S
+
+    V -->|"Mongoose"| D
+
+    T -.->|"Automated Tests"| API
+
+    E -.->|"Runtime Configuration"| API
+```
+
+**Figure 1: Existing Application Architecture**
 
 ## Containerised Architecture
 
@@ -417,7 +487,13 @@ Placeholder
 
 Placeholder
 
-##
+## CI/CD
+
+Placeholder
+
+## Container Registry
+
+Placeholder
 
 ## Scripts
 
