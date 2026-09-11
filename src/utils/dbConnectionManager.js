@@ -51,6 +51,10 @@ async function dbConnect() {
   }
 }
 
+async function dbDisconnect() {
+  await mongoose.disconnect();
+}
+
 module.exports = {
   dbConnect,
   dbDisconnect,
