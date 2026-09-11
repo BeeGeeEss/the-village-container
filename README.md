@@ -122,11 +122,126 @@ flowchart LR
 
 ## Containerised Architecture
 
-Placeholder
+The following diagram represents the architecture of The Village Wellness App backend after the Express.js application has been containerised using Docker for development.
+
+```mermaid
+flowchart TB
+
+    %% DEVELOPER
+    DEV["Developer<br/>Windows + WSL2 / Ubuntu"]
+
+    %% DOCKER ENVIRONMENT
+    subgraph DOCKER["Docker / Docker Desktop"]
+
+        DF["Dockerfile<br/><br/>
+        Node.js 26 Alpine<br/>
+        npm ci --omit=dev<br/>
+        USER node"]
+
+        IMG["Docker Image<br/><br/>
+        the-village-container<br/>
+        Version: 1.0.0"]
+
+        CONT["Running Docker Container<br/><br/>
+        Express / Node.js API<br/>
+        Port 3000"]
+
+        DF -->|"docker build"| IMG
+        IMG -->|"docker run"| CONT
+
+    end
+
+    %% ENVIRONMENT VARIABLES
+    ENV["Runtime Environment Variables<br/><br/>
+    DATABASE_URL<br/>
+    JWT_SECRET_KEY<br/>
+    PORT=3000<br/>
+    NODE_ENV=development"]
+
+    %% API CLIENT
+    CLIENT["Insomnia<br/>/ API Client"]
+
+    %% DATABASE
+    DB["MongoDB Atlas<br/><br/>
+    External Managed Database"]
+
+    %% CONNECTIONS
+    DEV -->|"Build & run commands"| DOCKER
+
+    ENV -.->|"Injected at runtime<br/>(--env-file .env)"| CONT
+
+    CLIENT -->|"HTTP requests<br/>localhost:3000"| CONT
+
+    CONT -->|"Mongoose / DATABASE_URL"| DB
+```
+
+**Figure 2: Containerised Development Architecture**
 
 ## CI/CD Architecture
 
-Placeholder
+The following diagram represents the continuous integration and continuous delivery (CI/CD) architecture used to automatically build and publish the containerised backend application to GitHub Container Registry.
+
+```mermaid id="7c4m2x"
+flowchart LR
+
+    %% DEVELOPER
+    DEV["Developer"]
+
+    %% SOURCE CONTROL
+    REPO["GitHub Repository<br/><br/>
+    BeeGeeEss / the-village-container"]
+
+    %% CI/CD
+    ACTIONS["GitHub Actions<br/><br/>
+    • Checkout code<br/>
+    • Install dependencies<br/>
+    • Run tests<br/>
+    • Run linting<br/>
+    • Build Docker image<br/>
+    • Tag image<br/>
+    • Push image"]
+
+    %% CONTAINER REGISTRY
+    GHCR["GitHub Container Registry<br/><br/>
+    ghcr.io/beegeeess/<br/>
+    the-village-container<br/><br/>
+    Tags:<br/>
+    latest<br/>
+    development<br/>
+    1.0.0<br/>
+    development-1.0.0<br/>
+    sha-xxxxxxx"]
+
+    %% DEPLOYMENT / RUNTIME
+    CONTAINER["Docker Container<br/><br/>
+    Express / Node.js API"]
+
+    %% DATABASE
+    DB["MongoDB Atlas<br/><br/>
+    External Managed Database"]
+
+    %% RUNTIME CONFIGURATION
+    SECRETS["Runtime Environment Variables<br/><br/>
+    DATABASE_URL<br/>
+    JWT_SECRET_KEY<br/>
+    PORT<br/>
+    NODE_ENV"]
+
+    %% CONNECTIONS
+    DEV -->|"git push"| REPO
+
+    REPO -->|"Workflow trigger"| ACTIONS
+
+    ACTIONS -->|"Build & push"| GHCR
+
+    GHCR -->|"Pull image"| CONTAINER
+
+    SECRETS -.->|"Secure runtime configuration"| CONTAINER
+
+    CONTAINER -->|"Mongoose"| DB
+```
+
+**Figure 3: CI/CD Architecture**
 
 ## Project Features
 
@@ -481,19 +596,72 @@ Or if you want hot-reloading, run dev mode
 
 ## Docker Containerisation
 
-Placeholder
+Docker packages the backend app and its dependencies into a reusable container image.
+
+This Docker file uses an official docker base image that bundles Node.js version 26 with the Linux operationg system:
+
+`FROM node:26-alpine`
+
+The applications dependencies are then added. Development dependencies are excluded from runtime:
+
+`RUN npm ci --omit=dev`
+
+The image is built from the project root:
+
+`docker build -t the-village-container:development .`
+
+To run the app, the configuration is added at runtime. The --env-file provides env. variables and keeps them outside of the image. 3000:3000 maps the port of the host machine, to the port of the container:
+
+`docker run --env-file .env -p 3000:3000 the-village-container:development`
 
 ## Docker Image Tags
 
-Placeholder
+Images are stored using GitHub Container Registry.
+
+The image naming convention is:
+ghcr.io/beegeeess/the-village-container:(insert tag)
+
+The Village container generates the following tags:
+
+- ghcr.io/beegeeess/the-village-container:latest | Most recent Image
+- ghcr.io/beegeeess/the-village-container:development | Development Environment
+- ghcr.io/beegeeess/the-village-container:1.0.0 | Application Version
+- ghcr.io/beegeeess/the-village-container:development-1.0.0 | Environment and Version
+- ghcr.io/beegeeess/the-village-container:sha-xxxxxxx | Specific Git Commit
 
 ## CI/CD
 
-Placeholder
+GitHub Actions automates the Docker image build and publishing process.
+
+The workflow is triggered when code is pushed to the main branch or when manually triggered.
+
+The workflow:
+
+1. Checks out the repository.
+2. Sets up Docker Buildx.
+3. Converts the repository name to lowercase for Docker compatibility.
+4. Reads the application version from package.json.
+5. Generates a short Git commit identifier.
+6. Authenticates with GitHub Container Registry.
+7. Builds the Docker image.
+8. Applies environment, version and Git commit tags.
+9. Pushes the image to GHCR.
+
+The workflow uses the GitHub-provided GITHUB_TOKEN for authentication to GHCR.
+
+Application secrets such as DATABASE_URL and JWT_SECRET_KEY are not stored in the repository or Docker image.
 
 ## Container Registry
 
-Placeholder
+GitHub Container Registry (GHCR) stores the Docker images produced by the CI/CD workflow.
+
+The registry path is:
+
+ghcr.io/beegeeess/the-village-container
+
+Using GHCR keeps the container images associated with the GitHub repository and its source-code history.
+
+The image tags allow a specific version or commit to be identified and deployed. [See Tags Here.](#docker-image-tags)
 
 ## Scripts
 
