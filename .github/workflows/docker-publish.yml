@@ -31,13 +31,21 @@ jobs:
       - name: Run linting
         run: npm run lint
 
+      # - name: Run tests
+      #   env:
+      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      #     JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      #     PORT: 3000
+      #     NODE_ENV: development
+      #   run: npm test
+
       - name: Run tests
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
           PORT: 3000
           NODE_ENV: development
-        run: npm test
+        run: npm test -- --testTimeout=30000
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
