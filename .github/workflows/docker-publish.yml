@@ -48,7 +48,7 @@ jobs:
 
       - name: Get application version
         run: |
-          echo "APP_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+          echo "APP_VERSION=$(node -p 'require("./package.json").version')" >> "$GITHUB_ENV"
 
       - name: Get short Git commit SHA
         run: |
