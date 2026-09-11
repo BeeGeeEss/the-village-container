@@ -60,10 +60,14 @@ The following diagram represents the existing architecture of The Village Wellne
 flowchart LR
 
     %% CLIENTS
+
     F["React Frontend<br/>(Separate Project)"]
+
     I["Insomnia<br/>/ API Client"]
 
+
     %% EXPRESS API
+
     subgraph API["Express / Node.js REST API"]
 
         S["Security Middleware<br/><br/>
@@ -82,9 +86,24 @@ flowchart LR
 
         S --> R
         R --> V
+
     end
 
+
+    %% MONGOOSE MODELS
+
+    subgraph MODELS["Mongoose Models"]
+
+        UM["User Model"]
+        MM["Mood Model"]
+        PM["Pain Model"]
+        EM["Event Model"]
+
+    end
+
+
     %% DATABASE
+
     subgraph DB["MongoDB Atlas"]
 
         D["Application Data<br/><br/>
@@ -96,25 +115,38 @@ flowchart LR
 
     end
 
+
     %% DEVELOPMENT & TESTING
+
     T["Development & Testing<br/><br/>
     Jest + Supertest"]
 
+
     %% ENVIRONMENT CONFIGURATION
+
     E["Environment Configuration<br/><br/>
     DATABASE_URL<br/>
     JWT_SECRET_KEY<br/>
     PORT<br/>
     NODE_ENV"]
 
+
     %% CONNECTIONS
+
     F -->|"HTTP / JSON"| S
     I -->|"HTTP / JSON"| S
 
-    V -->|"Mongoose"| D
+    V -->|"Uses"| UM
+    V -->|"Uses"| MM
+    V -->|"Uses"| PM
+    V -->|"Uses"| EM
+
+    UM -->|"Mongoose"| D
+    MM -->|"Mongoose"| D
+    PM -->|"Mongoose"| D
+    EM -->|"Mongoose"| D
 
     T -.->|"Automated Tests"| API
-
     E -.->|"Runtime Configuration"| API
 ```
 
@@ -122,57 +154,40 @@ flowchart LR
 
 ## Containerised Architecture
 
-The following diagram represents the architecture of The Village Wellness App backend after the Express.js application has been containerised using Docker for development.
+The following diagram represents the architecture of The Village Wellness App backend after the Express.js application has been containerised using Docker for development. Docker Compose manages the development container, while MongoDB Atlas remains an external managed database.
 
 ```mermaid
 flowchart TB
 
-    %% DEVELOPER
-    DEV["Developer<br/>Windows + WSL2 / Ubuntu"]
+    DEV["Developer"]
 
-    %% DOCKER ENVIRONMENT
-    subgraph DOCKER["Docker / Docker Desktop"]
+    COMPOSE["Docker Compose<br/>compose.yaml"]
 
-        DF["Dockerfile<br/><br/>
-        Node.js 26 Alpine<br/>
-        npm ci --omit=dev<br/>
-        USER node"]
+    subgraph CONT["Docker Container"]
 
-        IMG["Docker Image<br/><br/>
-        the-village-container<br/>
-        Version: 1.0.0"]
-
-        CONT["Running Docker Container<br/><br/>
-        Express / Node.js API<br/>
-        Port 3000"]
-
-        DF -->|"docker build"| IMG
-        IMG -->|"docker run"| CONT
+        API["Express / Node.js API<br/><br/>
+        Middleware<br/>
+        Routes & Controllers<br/>
+        Mongoose Models"]
 
     end
 
-    %% ENVIRONMENT VARIABLES
-    ENV["Runtime Environment Variables<br/><br/>
+    ENV[".env<br/><br/>
     DATABASE_URL<br/>
     JWT_SECRET_KEY<br/>
-    PORT=3000<br/>
-    NODE_ENV=development"]
+    PORT<br/>
+    NODE_ENV"]
 
-    %% API CLIENT
-    CLIENT["Insomnia<br/>/ API Client"]
+    CLIENT["Insomnia / API Client"]
 
-    %% DATABASE
-    DB["MongoDB Atlas<br/><br/>
-    External Managed Database"]
+    DB["MongoDB Atlas<br/>External Database"]
 
-    %% CONNECTIONS
-    DEV -->|"Build & run commands"| DOCKER
+    DEV -->|"docker compose up"| COMPOSE
+    COMPOSE -->|"Build & run"| CONT
+    ENV -.->|"Runtime configuration"| CONT
+    CLIENT -->|"HTTP :3000"| API
+    API -->|"Mongoose"| DB
 
-    ENV -.->|"Injected at runtime<br/>(--env-file .env)"| CONT
-
-    CLIENT -->|"HTTP requests<br/>localhost:3000"| CONT
-
-    CONT -->|"Mongoose / DATABASE_URL"| DB
 ```
 
 **Figure 2: Containerised Development Architecture**
@@ -598,21 +613,41 @@ Or if you want hot-reloading, run dev mode
 
 Docker packages the backend app and its dependencies into a reusable container image.
 
-This Docker file uses an official docker base image that bundles Node.js version 26 with the Linux operationg system:
+This Docker file uses an official Node.js 26 Alpine Linux base image:
 
 `FROM node:26-alpine`
 
-The applications dependencies are then added. Development dependencies are excluded from runtime:
+The applications dependencies are then installed using `npm ci`. Development dependencies are excluded from runtime:
 
 `RUN npm ci --omit=dev`
 
-The image is built from the project root:
+Docker Compose is used to define the development container's runtime configuration.
 
-`docker build -t the-village-container:development .`
+The compose.yaml file specifies how the Dockerfile is built, maps the application port, and provides environment variables to the container.
 
-To run the app, the configuration is added at runtime. The --env-file provides env. variables and keeps them outside of the image. 3000:3000 maps the port of the host machine, to the port of the container:
+The development container can be built with:
 
-`docker run --env-file .env -p 3000:3000 the-village-container:development`
+`docker compose build`
+
+The development container can be built with:
+
+`docker compose up`
+
+The Compose configuration loads environment variables from the local .env file at runtime. Ensuring that secrets are not contained within the GitHub repo, or the Docker build.
+
+The application is available at:
+
+http://localhost:3000
+
+Port 3000 on the host machine is mapped to port 3000 inside the container.
+
+MongoDB is not containerised as part of this project.
+
+The application connects to MongoDB Atlas as an external managed database using the DATABASE_URL environment variable.
+
+To stop the development container:
+
+`docker compose down`
 
 ## Docker Image Tags
 

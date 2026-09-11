@@ -1,3 +1,4 @@
+```yaml
 name: Build and Push Docker Image
 
 on:
@@ -11,13 +12,30 @@ permissions:
   packages: write
 
 jobs:
+
   build_container:
-    name: Build Container
+    name: Test, Build and Publish Container
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -26,7 +44,7 @@ jobs:
         run: |
           echo "REPO_LC=${REPO,,}" >> $GITHUB_ENV
         env:
-          REPO: "${{ github.repository }}"
+          REPO: '${{ github.repository }}'
 
       - name: Get application version
         run: |
@@ -54,3 +72,4 @@ jobs:
             ghcr.io/${{ env.REPO_LC }}:${{ env.APP_VERSION }}
             ghcr.io/${{ env.REPO_LC }}:development-${{ env.APP_VERSION }}
             ghcr.io/${{ env.REPO_LC }}:sha-${{ env.SHORT_SHA }}
+```
