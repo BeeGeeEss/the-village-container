@@ -65,6 +65,8 @@ jobs:
           tags: |
             ghcr.io/beegeeess/the-village-container:latest
             ghcr.io/beegeeess/the-village-container:development
+            ghcr.io/beegeeess/the-village-container:testing
+            ghcr.io/beegeeess/the-village-container:production
             ghcr.io/beegeeess/the-village-container:${{ env.APP_VERSION }}
-            ghcr.io/beegeeess/the-village-container:development-${{ env.APP_VERSION }}
+            ghcr.io/beegeeess/the-village-container:production-${{ env.APP_VERSION }}
             ghcr.io/beegeeess/the-village-container:sha-${{ env.SHORT_SHA }}

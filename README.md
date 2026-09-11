@@ -644,43 +644,79 @@ Or if you want hot-reloading, run dev mode
 
 ## Docker Containerisation
 
-Docker packages the backend app and its dependencies into a reusable container image.
+Docker packages the backend application and its dependencies into a reusable container image.
 
-This Docker file uses an official Node.js 26 Alpine Linux base image:
+### Development Environment
+
+The Dockerfile uses an official Node.js 26 Alpine Linux base image:
 
 `FROM node:26-alpine`
 
-The applications dependencies are then installed using `npm ci`. Development dependencies are excluded from runtime:
+Application dependencies are installed using `npm ci`. Development dependencies are excluded from the runtime image:
 
 `RUN npm ci --omit=dev`
 
-Docker Compose is used to define the development container's runtime configuration.
+Docker Compose is used to define the development container's runtime configuration. The `compose.yaml` file specifies how the Dockerfile is built, maps the application port, and provides environment variables to the container.
 
-The compose.yaml file specifies how the Dockerfile is built, maps the application port, and provides environment variables to the container.
-
-The development container can be built with:
+The development container can be built using:
 
 `docker compose build`
 
-The development container can be built with:
+The development container can then be started using:
 
 `docker compose up`
 
-The Compose configuration loads environment variables from the local .env file at runtime. Ensuring that secrets are not contained within the GitHub repo, or the Docker build.
+The Compose configuration loads environment variables from the local `.env` file at runtime. This ensures that sensitive configuration such as the MongoDB connection string and JWT secret are not stored in the GitHub repository or included in the Docker image.
 
 The application is available at:
 
-[http://localhost:3000](http://localhost:3000)
+`http://localhost:3000`
 
 Port 3000 on the host machine is mapped to port 3000 inside the container.
 
-MongoDB is not containerised as part of this project.
-
-The application connects to MongoDB Atlas as an external managed database using the DATABASE_URL environment variable.
+MongoDB is not containerised as part of this project. The application connects to MongoDB Atlas as an external managed database using the `DATABASE_URL` environment variable.
 
 To stop the development container:
 
 `docker compose down`
+
+### Production Environment
+
+GitHub Actions automatically builds and publishes validated Docker images to GitHub Container Registry (GHCR).
+
+The production image is identified using the `production` tag and versioned release tags. For example:
+
+`ghcr.io/beegeeess/the-village-container:production`
+
+A specific application version can also be pulled using its version tag:
+
+`ghcr.io/beegeeess/the-village-container:1.0.0`
+
+The production image can be pulled from GitHub Container Registry using:
+
+`docker pull ghcr.io/beegeeess/the-village-container:production`
+
+The image can then be run with production environment variables supplied at runtime:
+
+`docker run --env-file .env.production -p 3000:3000 ghcr.io/beegeeess/the-village-container:production`
+
+The `.env.production` file is not committed to the repository and contains the production runtime configuration, including:
+
+* `DATABASE_URL`
+* `JWT_SECRET_KEY`
+* `PORT`
+* `NODE_ENV=production`
+
+This approach keeps sensitive configuration outside the Docker image and allows the same container image to be configured for different environments at runtime.
+
+The production image can be tested by accessing the API at:
+
+`http://localhost:3000`
+
+and sending API requests using an API client such as Insomnia.
+
+This demonstrates that the Docker image published by the CI/CD pipeline can be retrieved from GHCR and successfully run as a production-configured container.
+
 
 ## Docker Image Tags
 
@@ -693,8 +729,10 @@ The Village container generates the following tags:
 
 - ghcr.io/beegeeess/the-village-container:latest | Most recent Image
 - ghcr.io/beegeeess/the-village-container:development | Development Environment
+- ghcr.io/beegeeess/the-village-container:testing | Test Environment
+- ghcr.io/beegeeess/the-village-container:production | Production Environment
 - ghcr.io/beegeeess/the-village-container:1.0.0 | Application Version
-- ghcr.io/beegeeess/the-village-container:development-1.0.0 | Environment and Version
+- ghcr.io/beegeeess/the-village-container:production-1.0.0 | Environment and Version
 - ghcr.io/beegeeess/the-village-container:sha-xxxxxxx | Specific Git Commit
 
 ## CI/CD
