@@ -98,7 +98,69 @@ flowchart LR
     E -.->|"Runtime Configuration"| API
 ```
 
-**Figure 1: Existing Application Architecture**
+The Village Wellness App uses client-server architecture, where a React front-end (seperate project) communicates with an Express.js/Node.js REST API. The backend processes HTTP requests, validates data, authenticates and authorises users, and connects to a MongoDB Atlas database, through Mongoose.
+
+### React
+
+The React frontend communicates with the backend via HTTP requests and JSON data. API clients such as Insomnia, can be used to communicate with data via the Express.js API, rather than the directly within the database. React is outside of the scope of the current project, but has been reflected in the architecture for context.
+
+### Express.js & Node.js
+
+The Express.js application takes a central role in processing - receiving requests from clients, validating data, applying authentication and security middleware, routing requests to controllers, and communicating with the database.
+
+#### API
+
+The backend is implemented using Node.js and Express.js.
+Express provides the HTTP server and routing framework used to expose RESTful endpoints for the application’s resources, including:
+
+• Users
+• Moods
+• Pains
+• Users
+
+The API follows a REST-style architecture where clients interact with resources through HTTP methods such as GET, POST, PUT and DELETE.
+
+#### Security
+
+The API has incorporated several middlware security components:
+
+- Helmet: To apply security-related HTTP headers to responses - to protect against common web app vulnerabilities
+- CORS: Provides browser-level cross-origin access controls
+- JSON Web Tokens (JWTs): The API can issue JWTs to the client, the client can send the token (in the form of a bearer token) in the authorization header of a HTTP request to verify authentication. JWTs are stored as JWT_SECRET_KEY environment variables, so that secrets are not being committed to Git repositories
+- Authorisation: Once the user is authenticated and can gain access to the application, authorisation is granted based on user roles i.e admin/basic user
+
+#### Routes & Controllers
+
+The application keeps each route seperate so that requests for moods are handled separately to requests related to pain.
+
+The backend has the following routes:
+
+- Users
+- Pains
+- Moods
+- Events
+
+The routing works alongside the authentication and authorisation middleware, ensuring that only registered users, with the appropriate role can access certain endpoints.
+
+#### Error Handling
+
+The API also provides consistent HTTP error responses:
+
+• 400 — Bad Request
+• 401 — Unauthorised
+• 403 — Forbidden
+• 404 — Not Found
+• 500 — Internal Server Error
+
+#### Testing
+
+#### Environment Variables
+
+### MongoDB Atlas
+
+MongoDB Atlas persists data and communicates with Express.js via mongoose - an object data modelling layer.
+
+There is a clear separation of concerns between Express.js/Node.js, React, and MongoDB Atlas, which ensures that each application has clear responsibilities and limited access.
 
 ## Containerised Architecture
 
@@ -137,8 +199,6 @@ flowchart TB
     API -->|"Mongoose"| DB
 
 ```
-
-**Figure 2: Containerised Development Architecture**
 
 ## CI/CD Architecture
 
@@ -236,5 +296,3 @@ flowchart TB
 
     CONTAINER -->|"Mongoose"| DB
 ```
-
-**Figure 3: CI/CD Architecture**
