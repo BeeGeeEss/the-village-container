@@ -414,7 +414,11 @@ devDependencies
 ## Project Structure
 
 ```js
-📁 village-backend
+📁 the-village-container
+    📁 .github
+        📁 workflows
+            ─ docker-publish.yml
+    📁 images
     📁 src
         📁 controllers
             ─ EventRouter.js
@@ -444,10 +448,13 @@ devDependencies
         ─ painRouter.test.js
         ─ server.test.js
         ─ userRouter.test.js
+    ─ .dockerignore
+    ─ application-architecture.md
+    ─ compose.yaml
+    ─ Dockerfile
+    ─ eslint.config.mjs
     ─ example.env
-    – .eslintrc.json
-    – eslint.config.mjs
-    – jest.config.js
+    ─ jest.config.js
     ─ LICENSE
     ─ package-lock.json
     ─ package.json
@@ -706,10 +713,10 @@ The image can then be run with production environment variables supplied at runt
 
 The `.env.production` file is not committed to the repository and contains the production runtime configuration, including:
 
-* `DATABASE_URL`
-* `JWT_SECRET_KEY`
-* `PORT`
-* `NODE_ENV=production`
+- `DATABASE_URL`
+- `JWT_SECRET_KEY`
+- `PORT`
+- `NODE_ENV=production`
 
 This approach keeps sensitive configuration outside the Docker image and allows the same container image to be configured for different environments at runtime.
 
