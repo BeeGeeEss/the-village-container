@@ -39,6 +39,14 @@ jobs:
           NODE_ENV: development
         run: npm test
 
+      - name: Get application version
+        run: |
+          echo "APP_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+
+      - name: Get short Git commit SHA
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -57,3 +65,6 @@ jobs:
           tags: |
             ghcr.io/beegeeess/the-village-container:latest
             ghcr.io/beegeeess/the-village-container:development
+            ghcr.io/beegeeess/the-village-container:${{ env.APP_VERSION }}
+            ghcr.io/beegeeess/the-village-container:development-${{ env.APP_VERSION }}
+            ghcr.io/beegeeess/the-village-container:sha-${{ env.SHORT_SHA }}

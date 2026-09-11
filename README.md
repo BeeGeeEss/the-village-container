@@ -670,7 +670,7 @@ The Compose configuration loads environment variables from the local .env file a
 
 The application is available at:
 
-http://localhost:3000
+[http://localhost:3000](http://localhost:3000)
 
 Port 3000 on the host machine is mapped to port 3000 inside the container.
 
@@ -706,14 +706,19 @@ The workflow is triggered when code is pushed to the main branch or when manuall
 The workflow:
 
 1. Checks out the repository.
-2. Sets up Docker Buildx.
-3. Converts the repository name to lowercase for Docker compatibility.
-4. Reads the application version from package.json.
-5. Generates a short Git commit identifier.
-6. Authenticates with GitHub Container Registry.
-7. Builds the Docker image.
-8. Applies environment, version and Git commit tags.
-9. Pushes the image to GHCR.
+2. Sets up Node.js and installs project dependencies.
+3. Runs ESLint to check code quality.
+4. Runs the Jest and Supertest automated test suite.
+5. Sets up Docker Buildx.
+6. Converts the repository name to lowercase for Docker compatibility.
+7. Reads the application version from package.json.
+8. Generates a short Git commit identifier.
+9. Authenticates with GitHub Container Registry.
+10. Builds the Docker image.
+11. Applies environment, version, and Git commit tags.
+12. Pushes the validated image to GHCR.
+
+The Docker image is only built and published after the linting and automated tests complete successfully.
 
 The workflow uses the GitHub-provided GITHUB_TOKEN for authentication to GHCR.
 
