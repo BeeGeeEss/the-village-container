@@ -696,9 +696,13 @@ The production image can be pulled from GitHub Container Registry using:
 
 `docker pull ghcr.io/beegeeess/the-village-container:production`
 
+![Pulling production image](images/production-pull.png)
+
 The image can then be run with production environment variables supplied at runtime:
 
 `docker run --env-file .env.production -p 3000:3000 ghcr.io/beegeeess/the-village-container:production`
+
+![Production server](images/production-server.png)
 
 The `.env.production` file is not committed to the repository and contains the production runtime configuration, including:
 
@@ -717,6 +721,7 @@ and sending API requests using an API client such as Insomnia.
 
 This demonstrates that the Docker image published by the CI/CD pipeline can be retrieved from GHCR and successfully run as a production-configured container.
 
+![Production API Testing with JWT Auth](images/production-data-JWT.png)
 
 ## Docker Image Tags
 
