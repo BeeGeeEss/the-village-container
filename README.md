@@ -1,5 +1,3 @@
-Test test
-
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./images/banner-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="images/banner-light.png">
@@ -196,60 +194,93 @@ flowchart TB
 
 ## CI/CD Architecture
 
-The following diagram represents the continuous integration and continuous delivery (CI/CD) architecture used to automatically build and publish the containerised backend application to GitHub Container Registry.
+The following diagram represents the continuous integration and continuous delivery (CI/CD) architecture used to automatically validate, build, tag, and publish the containerised backend application to GitHub Container Registry.
 
-```mermaid id="7c4m2x"
-flowchart LR
+GitHub Actions performs code-quality checks and automated testing before building the Docker image.
+
+The resulting image is versioned using environment, application version, and Git commit information before being published to GitHub Container Registry.
+
+Runtime environment variables and secrets are supplied separately and are not stored in the Docker image.
+
+```mermaid
+flowchart TB
 
     %% DEVELOPER
+
     DEV["Developer"]
 
     %% SOURCE CONTROL
+
     REPO["GitHub Repository<br/><br/>
     BeeGeeEss / the-village-container"]
 
-    %% CI/CD
-    ACTIONS["GitHub Actions<br/><br/>
-    • Checkout code<br/>
-    • Install dependencies<br/>
-    • Run tests<br/>
-    • Run linting<br/>
-    • Build Docker image<br/>
-    • Tag image<br/>
-    • Push image"]
+    %% CI/CD PIPELINE
+
+    subgraph ACTIONS["GitHub Actions CI/CD Pipeline"]
+
+        CHECKOUT["Checkout Code"]
+
+        INSTALL["Install Dependencies<br/><br/>
+        npm ci"]
+
+        LINT["Code Quality Check<br/><br/>
+        npm run lint"]
+
+        TEST["Automated Tests<br/><br/>
+        npm test"]
+
+        BUILD["Build Docker Image<br/><br/>
+        Docker Buildx"]
+
+        TAG["Tag Docker Image<br/><br/>
+        latest<br/>
+        development<br/>
+        1.0.0<br/>
+        development-1.0.0<br/>
+        sha-xxxxxxx"]
+
+        PUSH["Push Image"]
+
+        CHECKOUT --> INSTALL
+        INSTALL --> LINT
+        LINT --> TEST
+        TEST --> BUILD
+        BUILD --> TAG
+        TAG --> PUSH
+
+    end
 
     %% CONTAINER REGISTRY
+
     GHCR["GitHub Container Registry<br/><br/>
     ghcr.io/beegeeess/<br/>
-    the-village-container<br/><br/>
-    Tags:<br/>
-    latest<br/>
-    development<br/>
-    1.0.0<br/>
-    development-1.0.0<br/>
-    sha-xxxxxxx"]
+    the-village-container"]
 
-    %% DEPLOYMENT / RUNTIME
+    %% RUNTIME
+
     CONTAINER["Docker Container<br/><br/>
     Express / Node.js API"]
 
-    %% DATABASE
-    DB["MongoDB Atlas<br/><br/>
-    External Managed Database"]
-
     %% RUNTIME CONFIGURATION
+
     SECRETS["Runtime Environment Variables<br/><br/>
     DATABASE_URL<br/>
     JWT_SECRET_KEY<br/>
     PORT<br/>
     NODE_ENV"]
 
+    %% DATABASE
+
+    DB["MongoDB Atlas<br/><br/>
+    External Managed Database"]
+
     %% CONNECTIONS
-    DEV -->|"git push"| REPO
 
-    REPO -->|"Workflow trigger"| ACTIONS
+    DEV -->|"git push to main"| REPO
 
-    ACTIONS -->|"Build & push"| GHCR
+    REPO -->|"Workflow trigger"| CHECKOUT
+
+    PUSH -->|"Publish image"| GHCR
 
     GHCR -->|"Pull image"| CONTAINER
 
