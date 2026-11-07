@@ -774,6 +774,8 @@ The workflow uses the GitHub-provided GITHUB_TOKEN for authentication to GHCR.
 
 Application secrets such as DATABASE_URL and JWT_SECRET_KEY are not stored in the repository or Docker image.
 
+Future projects will extend this to cloud based deployments.
+
 ## Container Registry
 
 GitHub Container Registry (GHCR) stores the Docker images produced by the CI/CD workflow.
