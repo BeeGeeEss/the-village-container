@@ -35,3 +35,7 @@ build/
 
 # Docker
 docker-compose.override.yml
+
+# GitHub Actions and repository configuration
+!.github/
+!.github/**
