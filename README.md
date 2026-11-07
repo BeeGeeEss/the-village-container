@@ -774,7 +774,7 @@ The workflow uses the GitHub-provided GITHUB_TOKEN for authentication to GHCR.
 
 Application secrets such as DATABASE_URL and JWT_SECRET_KEY are not stored in the repository or Docker image.
 
-Future projects will extend this to cloud based deployments.
+Future projects will extend this to cloud based deployments - see [The Village Wellness App CI/CD Project.](https://github.com/BeeGeeEss/the-village-CICD/blob/main/README.md)
 
 ## Container Registry
 
